@@ -1,6 +1,6 @@
 {
     "required": true,
-    "package": "me.imbanana.modtemplate.mixin",
+    "package": "me.imbanana.knockdown.mixin",
     "compatibilityLevel": "JAVA_25",
     "minVersion": "0.8",
     "mixinextras": {

@@ -6,10 +6,10 @@ license = "MIT"
 [[mods]]
 modId = "${mod_id}"
 version = "${version}"
-displayName = "ModTemplate"
+displayName = "Knockdown"
 authors = "ImBanana"
 description = '''
-Mod Template
+Knockdown mod
 '''
 logoFile = "assets/${mod_id}/icon.png"
 modUrl = "https://modrinth.com/project/${modrinth_id}"

@@ -2,8 +2,8 @@
     "schemaVersion": 1,
     "id": "${mod_id}",
     "version": "${version}",
-    "name": "ModTemplate",
-    "description": "Mod Template",
+    "name": "Knockdown",
+    "description": "Knockdown mod",
     "authors": [
         "ImBanana"
     ],
@@ -15,10 +15,10 @@
     "environment": "*",
     "entrypoints": {
         "main": [
-            "me.imbanana.modtemplate.fabric.ModtemplateFabric"
+            "me.imbanana.knockdown.fabric.KnockdownModFabric"
         ],
         "client": [
-            "me.imbanana.modtemplate.fabric.client.ModtemplateFabricClient"
+            "me.imbanana.knockdown.fabric.client.KnockdownModFabricClient"
         ]
     },
     "mixins": [
