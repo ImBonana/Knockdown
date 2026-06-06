@@ -8,4 +8,6 @@ public interface IKnockdownable {
     Component getDeathMessage();
     boolean isKnockedDown();
     boolean shouldKnockdown();
+    int getTicksLeft();
+    int getMaxTicks();
 }

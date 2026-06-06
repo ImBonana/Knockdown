@@ -1,5 +1,6 @@
 package me.imbanana.knockdown;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import me.imbanana.knockdown.mixin.PlayerMixin;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;

@@ -116,4 +116,14 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
     public boolean shouldKnockdown() {
         return true;
     }
+
+    @Override
+    public int getMaxTicks() {
+        return 100;
+    }
+
+    @Override
+    public int getTicksLeft() {
+        return 25;
+    }
 }
