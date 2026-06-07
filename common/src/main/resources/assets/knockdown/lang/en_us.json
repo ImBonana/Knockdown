@@ -1,3 +1,3 @@
 {
-    "knockdown.knocked_down.message": "%s died"
+    "death.attack.bleed_out": "%1$s bled out!"
 }

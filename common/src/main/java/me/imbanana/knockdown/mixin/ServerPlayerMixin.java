@@ -85,7 +85,7 @@ public abstract class ServerPlayerMixin extends Player implements IKnockdownable
                         )
                 );
 
-                this.displayDeathMessage(Component.translatable(KnockdownMod.MOD_ID + ".knocked_down.message", this.getDisplayName()));
+                this.displayDeathMessage(Component.translatable("death.attack.bleed_out", this.getDisplayName()));
             }
 
             return;

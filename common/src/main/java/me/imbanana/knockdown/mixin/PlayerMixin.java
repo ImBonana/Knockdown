@@ -1,13 +1,18 @@
 package me.imbanana.knockdown.mixin;
 
 import me.imbanana.knockdown.KnockdownMod;
+import me.imbanana.knockdown.data.ModDamageTypes;
+import me.imbanana.knockdown.data.ModDataAttachments;
 import me.imbanana.knockdown.util.IKnockdownable;
+import me.imbanana.knockdown.util.KnockdownData;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -30,24 +35,44 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
     protected abstract void removeEntitiesOnShoulder();
 
 
-    //!! For some reason NeoForge don't like this, And because of that NeoForge is crashing without any error :/
-    // TODO: Replace this with data attachment
+    @Shadow
+    public abstract void die(DamageSource source);
+
+    @Shadow
+    public abstract boolean isLocalPlayer();
+
     @Unique
-    private static final EntityDataAccessor<Boolean> KNOCKED_DOWN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
-    @Unique
-    private static final EntityDataAccessor<Component> DEATH_MESSAGE = SynchedEntityData.defineId(Player.class, EntityDataSerializers.COMPONENT);
-    
+    private int knockdownTicksLeft = 0;
+
     protected PlayerMixin(EntityType<? extends LivingEntity> type, Level level) {
         super(type, level);
     }
 
     @Inject(
-            method = "defineSynchedData",
+            method = "tick",
             at = @At("TAIL")
     )
-    private void addSynchedData(SynchedEntityData.Builder entityData, CallbackInfo ci) {
-        entityData.define(KNOCKED_DOWN, false);
-        entityData.define(DEATH_MESSAGE, Component.empty());
+    private void injectTick(CallbackInfo ci) {
+        if (knockdownTicksLeft > 0 && this.isKnockedDown()) {
+            knockdownTicksLeft -= 1;
+        }
+
+        if (!this.isLocalPlayer() && this.isKnockedDown() && knockdownTicksLeft <= 0 && this.isAlive()) {
+            this.setHealth(0);
+            this.die(new DamageSource(
+                    this.level()
+                            .registryAccess()
+                            .lookupOrThrow(Registries.DAMAGE_TYPE)
+                            .get(ModDamageTypes.BLEED_OUT.identifier())
+                            .orElseThrow()
+            ));
+        }
+
+        if (this.isLocalPlayer()) {
+            if (knockdownTicksLeft <= 0 && this.isKnockedDown() && this.isAlive()) {
+                knockdownTicksLeft = this.getMaxTicks();
+            }
+        }
     }
 
     @Inject(
@@ -55,8 +80,7 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
             at = @At("TAIL")
     )
     private void writeAdditionalPlayerData(ValueOutput output, CallbackInfo ci) {
-        output.putBoolean("knocked_down", this.isKnockedDown());
-        output.store("death_message", ComponentSerialization.CODEC, this.getDeathMessage());
+        output.putInt("knockdown_ticks_left", this.getTicksLeft());
     }
 
     @Inject(
@@ -64,9 +88,7 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
             at = @At("TAIL")
     )
     private void readAdditionalPlayerData(ValueInput input, CallbackInfo ci) {
-        boolean isCurrentlyKnockedDown = input.getBooleanOr("knocked_down", false);
-        if (isCurrentlyKnockedDown) knockdown();
-        this.setDeathMessage(input.read("death_message", ComponentSerialization.CODEC).orElse(CommonComponents.EMPTY));
+        this.knockdownTicksLeft = input.getIntOr("knockdown_ticks_left", 0);
     }
 
     @Inject(
@@ -92,24 +114,25 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
         this.clearFire();
         this.setTicksFrozen(0);
         this.removeEntitiesOnShoulder();
+        this.knockdownTicksLeft = this.getMaxTicks();
     }
 
     @Override
     public boolean isKnockedDown() {
-        return this.entityData.get(KNOCKED_DOWN);
+        return ModDataAttachments.KNOCKDOWN.getOrSet(this, KnockdownData.DEFAULT).isKnockedDown();
     }
 
     public void setKnockedDown(boolean value) {
-        this.entityData.set(KNOCKED_DOWN, value);
+        ModDataAttachments.KNOCKDOWN.modify(this, knockdownData -> knockdownData.setKnockedDown(value), KnockdownData.DEFAULT);
     }
 
     public Component getDeathMessage() {
-        return this.entityData.get(DEATH_MESSAGE);
+        return ModDataAttachments.KNOCKDOWN.getOrSet(this, KnockdownData.DEFAULT).deathMessage();
     }
 
     @Override
     public void setDeathMessage(Component message) {
-        this.entityData.set(DEATH_MESSAGE, message);
+        ModDataAttachments.KNOCKDOWN.modify(this, knockdownData -> knockdownData.setDeathMessage(message), KnockdownData.DEFAULT);
     }
 
     @Override
@@ -124,6 +147,6 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
 
     @Override
     public int getTicksLeft() {
-        return 25;
+        return this.knockdownTicksLeft;
     }
 }

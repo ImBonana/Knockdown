@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2f;
 
-@Environment(EnvType.CLIENT)
 public abstract class KnockdownOverlay {
     public static final Identifier ID = KnockdownMod.idOf("overlay");
 
