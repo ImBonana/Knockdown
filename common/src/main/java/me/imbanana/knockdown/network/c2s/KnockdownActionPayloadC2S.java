@@ -32,12 +32,12 @@ public record KnockdownActionPayloadC2S(Action action) implements CustomPacketPa
         IKnockdownable player = (IKnockdownable) context.getPlayer();
 
         if (player.isKnockedDown()) {
-            player.setFastBleedOut(
-                    switch (payload.action()) {
-                        case Action.START_FASTER_BLEED_OUT -> true;
-                        case Action.END_FASTER_BLEED_OUT -> false;
-                    }
-            );
+            switch (payload.action()) {
+                case START_FASTER_BLEED_OUT -> player.setFastBleedOut(true);
+                case END_FASTER_BLEED_OUT -> player.setFastBleedOut(false);
+                case START_WAIT_FOR_HELP -> player.setWaitingForHelp(true);
+                case END_WAIT_FOR_HELP -> player.setWaitingForHelp(false);
+            }
         } else {
             player.setFastBleedOut(false);
         }
@@ -45,6 +45,8 @@ public record KnockdownActionPayloadC2S(Action action) implements CustomPacketPa
 
     public enum Action {
         START_FASTER_BLEED_OUT,
-        END_FASTER_BLEED_OUT
+        END_FASTER_BLEED_OUT,
+        START_WAIT_FOR_HELP,
+        END_WAIT_FOR_HELP
     }
 }

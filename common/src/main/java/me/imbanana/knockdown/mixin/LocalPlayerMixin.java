@@ -7,16 +7,38 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin extends PlayerMixin {
+    @Shadow
+    private boolean crouching;
+
     protected LocalPlayerMixin(EntityType<? extends LivingEntity> type, Level level) {
         super(type, level);
+    }
+
+    @Inject(
+            method = "tick",
+            at = @At("TAIL")
+    )
+    private void cancelCrouch(CallbackInfo ci) {
+        if (this.isKnockedDown()) this.crouching = false;
     }
 
     @Override
     public void setFastBleedOut(boolean value) {
         super.setFastBleedOut(value);
         ModNetwork.sendToServer(new KnockdownActionPayloadC2S(value ? KnockdownActionPayloadC2S.Action.START_FASTER_BLEED_OUT : KnockdownActionPayloadC2S.Action.END_FASTER_BLEED_OUT));
+    }
+
+    @Override
+    public void setWaitingForHelp(boolean value) {
+        super.setWaitingForHelp(value);
+        ModNetwork.sendToServer(new KnockdownActionPayloadC2S(value ? KnockdownActionPayloadC2S.Action.START_WAIT_FOR_HELP : KnockdownActionPayloadC2S.Action.END_WAIT_FOR_HELP));
     }
 }

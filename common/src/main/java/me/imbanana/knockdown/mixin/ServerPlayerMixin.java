@@ -10,6 +10,7 @@ import me.imbanana.knockdown.network.ModNetwork;
 import me.imbanana.knockdown.network.s2c.KnockdownSyncPayloadS2C;
 import me.imbanana.knockdown.util.IKnockdownable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -27,7 +28,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
@@ -38,6 +38,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends Player implements IKnockdownable {

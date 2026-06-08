@@ -14,6 +14,7 @@ public class ModKeyMapping {
     public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(KnockdownMod.idOf("knockdown"));
 
     public static KeyMapping fastBleedOutKey;
+    public static KeyMapping waitForHelpKey;
 
     public static void register(Function<KeyMapping, KeyMapping> registrar) {
         fastBleedOutKey = registrar.apply(new KeyMapping(
@@ -21,7 +22,13 @@ public class ModKeyMapping {
                 InputConstants.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_RIGHT,
                 CATEGORY
+        ));
 
+        waitForHelpKey = registrar.apply(new KeyMapping(
+                createTranslationKey("wait_for_help"),
+                InputConstants.Type.MOUSE,
+                GLFW.GLFW_MOUSE_BUTTON_LEFT,
+                CATEGORY
         ));
     }
 
@@ -34,14 +41,24 @@ public class ModKeyMapping {
             player.setFastBleedOut(false);
         }
 
-        while (fastBleedOutKey.consumeClick()) {
+        if (fastBleedOutKey.isDown()) {
             if (player.isKnockedDown()) {
                 player.setFastBleedOut(true);
+            }
+        }
+
+        if (!waitForHelpKey.isDown() && player.isWaitingForHelp()) {
+            player.setWaitingForHelp(false);
+        }
+
+        if (waitForHelpKey.isDown()) {
+            if (player.isKnockedDown()) {
+                player.setWaitingForHelp(true);
             }
         }
     }
 
     private static String createTranslationKey(String name) {
-        return "keu." + KnockdownMod.MOD_ID + "." + name;
+        return "key." + KnockdownMod.MOD_ID + "." + name;
     }
 }

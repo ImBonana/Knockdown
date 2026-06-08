@@ -1,4 +1,5 @@
 {
     "death.attack.bleed_out": "%1$s bled out!",
-    "key.knockdown.fast_bleed_out": "Fast Bleed Out"
+    "key.knockdown.fast_bleed_out": "Bleed Out",
+    "key.knockdown.wait_for_help": "Wait For Help"
 }

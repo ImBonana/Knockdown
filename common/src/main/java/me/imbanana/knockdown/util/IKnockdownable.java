@@ -14,5 +14,7 @@ public interface IKnockdownable {
     int getBleedOutSpeed();
     void setFastBleedOut(boolean value);
     boolean isBleedingOutFast();
+    void setWaitingForHelp(boolean value);
+    boolean isWaitingForHelp();
     void syncTicksLeft();
 }

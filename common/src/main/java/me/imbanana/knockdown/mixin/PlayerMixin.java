@@ -14,6 +14,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -33,9 +34,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Player.class)
 public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnockdownable {
+    private static final Identifier MAX_HEALTH_MODIFIER_ID = KnockdownMod.idOf("knockdown_max_health");
+    private static final Identifier JUMP_STRENGTH_MODIFIER_ID = KnockdownMod.idOf("knockdown_jump_strength");
+
     @Shadow
     protected abstract void removeEntitiesOnShoulder();
-
 
     @Shadow
     public abstract void die(DamageSource source);
@@ -45,9 +48,12 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
 
     @Unique
     private int knockdownTicksLeft = 0;
+    @Unique
+    private int ticksPassed = 0;
 
     @Unique
     private boolean fastBleedOut = false;
+    private boolean waitngForHelp = false;
 
     protected PlayerMixin(EntityType<? extends LivingEntity> type, Level level) {
         super(type, level);
@@ -59,8 +65,11 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
     )
     private void injectTick(CallbackInfo ci) {
         if (knockdownTicksLeft > 0 && this.isKnockedDown()) {
-            KnockdownMod.LOGGER.info(String.valueOf(this.isUsingItem()));
-            knockdownTicksLeft -= this.getBleedOutSpeed();
+            ticksPassed += 1;
+            if (ticksPassed >= 2) {
+                knockdownTicksLeft -= this.getBleedOutSpeed();
+                ticksPassed = 0;
+            }
         }
 
         if (!this.isLocalPlayer() && this.isKnockedDown() && knockdownTicksLeft <= 0 && this.isAlive()) {
@@ -79,6 +88,14 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
                 knockdownTicksLeft = this.getMaxTicks();
             }
         }
+
+       if (this.isKnockedDown()) {
+           AttributeInstance maxHealthAttribute = this.getAttribute(Attributes.MAX_HEALTH);
+           if (maxHealthAttribute != null && !maxHealthAttribute.hasModifier(MAX_HEALTH_MODIFIER_ID)) maxHealthAttribute.addOrUpdateTransientModifier(new AttributeModifier(MAX_HEALTH_MODIFIER_ID, 1 - maxHealthAttribute.getValue(), AttributeModifier.Operation.ADD_VALUE));
+
+           AttributeInstance jumpStrengthAttribute = this.getAttribute(Attributes.JUMP_STRENGTH);
+           if (jumpStrengthAttribute != null && !jumpStrengthAttribute.hasModifier(JUMP_STRENGTH_MODIFIER_ID)) jumpStrengthAttribute.addOrUpdateTransientModifier(new AttributeModifier(JUMP_STRENGTH_MODIFIER_ID, -jumpStrengthAttribute.getValue(), AttributeModifier.Operation.ADD_VALUE));
+       }
     }
 
     @Inject(
@@ -108,12 +125,6 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
 
     @Override
     public void knockdown() {
-        AttributeInstance maxHealthAttribute = this.getAttribute(Attributes.MAX_HEALTH);
-        if (maxHealthAttribute != null) maxHealthAttribute.addOrUpdateTransientModifier(new AttributeModifier(KnockdownMod.idOf("knockdown_max_health"), 1 - maxHealthAttribute.getValue(), AttributeModifier.Operation.ADD_VALUE));
-
-        AttributeInstance jumpStrengthAttribute = this.getAttribute(Attributes.JUMP_STRENGTH);
-        if (jumpStrengthAttribute != null) jumpStrengthAttribute.addOrUpdateTransientModifier(new AttributeModifier(KnockdownMod.idOf("knockdown_jump_strength"), -jumpStrengthAttribute.getValue(), AttributeModifier.Operation.ADD_VALUE));
-
         this.setHealth(1);
         this.setPose(Pose.SWIMMING);
         this.setKnockedDown(true);
@@ -174,6 +185,16 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
     @Override
     public boolean isBleedingOutFast() {
         return this.fastBleedOut;
+    }
+
+    @Override
+    public boolean isWaitingForHelp() {
+        return this.waitngForHelp;
+    }
+
+    @Override
+    public void setWaitingForHelp(boolean value) {
+        this.waitngForHelp = value;
     }
 
     @Override
