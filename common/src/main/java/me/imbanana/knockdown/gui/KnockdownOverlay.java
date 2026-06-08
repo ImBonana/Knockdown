@@ -1,6 +1,7 @@
 package me.imbanana.knockdown.gui;
 
 import me.imbanana.knockdown.KnockdownMod;
+import me.imbanana.knockdown.keymapping.ModKeyMapping;
 import me.imbanana.knockdown.mixin.accessor.GuiGraphicsExtractorAccessor;
 import me.imbanana.knockdown.util.IKnockdownable;
 import net.fabricmc.api.EnvType;
@@ -8,6 +9,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2f;
 
@@ -21,15 +23,34 @@ public abstract class KnockdownOverlay {
         if (player == null) return;
         if (!player.isKnockedDown()) return;
 
-
-        GuiGraphicsExtractorAccessor accessor = (GuiGraphicsExtractorAccessor) graphics;
-
-        int width = 45;
-
-        int x = (graphics.guiWidth() - width) / 2 - 1;
-        int y = graphics.guiHeight() - width - 40;
-
+        int progressBarWidth = 45;
+        int progressBarX = (graphics.guiWidth() - progressBarWidth) / 2 - 1;
+        int progressBarY = graphics.guiHeight() - progressBarWidth - 40;
         float progress = player.getTicksLeft() / (float) player.getMaxTicks();
+
+        this.renderProgressBar(player, graphics, progressBarX, progressBarY, progressBarWidth, progress);
+
+        int progressMargin = 5;
+
+        Component skipText = Component.literal("SKIP");
+        Component holdText = Component.literal("HOLD");
+
+        Component skipTextButton = Component.translatable("overlay.knockdown.button.skip", ModKeyMapping.fastBleedOutKey.getTranslatedKeyMessage());
+        Component holdTextButton = Component.translatable("overlay.knockdown.button.hold", ModKeyMapping.waitForHelpKey.getTranslatedKeyMessage());
+
+        int textY = progressBarY + (progressBarWidth - minecraft.font.lineHeight) / 2;
+        int textColor = 0xFFFFFFFF;
+        int textColorActive = 0xFF00FF00;
+
+        graphics.text(minecraft.font, skipText, progressBarX + progressBarWidth + progressMargin, textY, player.isBleedingOutFast() ? textColorActive : textColor);
+        graphics.text(minecraft.font, skipTextButton, progressBarX + progressBarWidth + progressMargin, textY + minecraft.font.lineHeight, player.isBleedingOutFast() ? textColorActive : textColor);
+        graphics.text(minecraft.font, holdText, progressBarX - progressMargin - minecraft.font.width(holdText), textY, player.isWaitingForHelp() ? textColorActive : textColor);
+        graphics.text(minecraft.font, holdTextButton, progressBarX - progressMargin - minecraft.font.width(holdTextButton), textY + minecraft.font.lineHeight, player.isWaitingForHelp() ? textColorActive : textColor);
+    }
+
+    private void renderProgressBar(IKnockdownable player, GuiGraphicsExtractor graphics, int x, int y, int width, float progress) {
+        Minecraft minecraft = Minecraft.getInstance();
+        GuiGraphicsExtractorAccessor accessor = (GuiGraphicsExtractorAccessor) graphics;
 
         accessor.getGuiRenderState().addGuiElement(
                 new CircularProgressRenderState(

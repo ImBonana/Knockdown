@@ -8,6 +8,7 @@ import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionResult;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -22,13 +23,13 @@ public final class KnockdownModNeoForge {
         NeoForgeModNetwork.registerC2S(modBus);
         NeoForgeModNetwork.registerServer();
 
-        modBus.addListener(this::playerJoinEvent);
+        NeoForge.EVENT_BUS.addListener(this::playerJoinEvent);
 
-        modBus.addListener(this::onBlockClick);
-        modBus.addListener(this::onEntityRightClick);
-        modBus.addListener(this::harvestSpeed);
-        modBus.addListener(this::onAttackEntity);
-        modBus.addListener(this::onBreakBlock);
+        NeoForge.EVENT_BUS.addListener(this::onBlockClick);
+        NeoForge.EVENT_BUS.addListener(this::onEntityRightClick);
+        NeoForge.EVENT_BUS.addListener(this::harvestSpeed);
+        NeoForge.EVENT_BUS.addListener(this::onAttackEntity);
+        NeoForge.EVENT_BUS.addListener(this::onBreakBlock);
     }
 
     private void playerJoinEvent(PlayerEvent.PlayerLoggedInEvent event) {

@@ -17,6 +17,7 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(value = KnockdownMod.MOD_ID, dist = Dist.CLIENT)
 public class KnockdownModNeoForgeClient {
@@ -24,7 +25,8 @@ public class KnockdownModNeoForgeClient {
         modBus.addListener(this::overlayRegistryEvent);
         modBus.addListener(this::registerPipelinesEvent);
         modBus.addListener(this::registerKeyMapping);
-        modBus.addListener(this::onClientTick);
+
+        NeoForge.EVENT_BUS.addListener(this::onClientTick);
 
         NeoForgeModNetwork.registerClient();
     }

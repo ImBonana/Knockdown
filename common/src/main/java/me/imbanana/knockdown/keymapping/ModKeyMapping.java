@@ -18,7 +18,7 @@ public class ModKeyMapping {
 
     public static void register(Function<KeyMapping, KeyMapping> registrar) {
         fastBleedOutKey = registrar.apply(new KeyMapping(
-                createTranslationKey("fast_knockout"),
+                createTranslationKey("fast_bleed_out"),
                 InputConstants.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_RIGHT,
                 CATEGORY

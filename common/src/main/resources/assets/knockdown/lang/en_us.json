@@ -1,5 +1,8 @@
 {
     "death.attack.bleed_out": "%1$s bled out!",
+    "key.category.knockdown.knockdown": "Knockdown",
     "key.knockdown.fast_bleed_out": "Bleed Out",
-    "key.knockdown.wait_for_help": "Wait For Help"
+    "key.knockdown.wait_for_help": "Wait For Help",
+    "overlay.knockdown.button.skip": "Hold '%1$s' to skip",
+    "overlay.knockdown.button.hold": "Hold '%1$s' to hold"
 }

@@ -66,7 +66,7 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
     private void injectTick(CallbackInfo ci) {
         if (knockdownTicksLeft > 0 && this.isKnockedDown()) {
             ticksPassed += 1;
-            if (ticksPassed >= 2) {
+            if (ticksPassed >= 2 || !this.isWaitingForHelp()) {
                 knockdownTicksLeft -= this.getBleedOutSpeed();
                 ticksPassed = 0;
             }
