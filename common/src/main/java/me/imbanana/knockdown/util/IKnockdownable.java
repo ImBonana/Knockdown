@@ -9,5 +9,10 @@ public interface IKnockdownable {
     boolean isKnockedDown();
     boolean shouldKnockdown();
     int getTicksLeft();
+    void setTicksLeft(int value);
     int getMaxTicks();
+    int getBleedOutSpeed();
+    void setFastBleedOut(boolean value);
+    boolean isBleedingOutFast();
+    void syncTicksLeft();
 }

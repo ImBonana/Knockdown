@@ -3,6 +3,8 @@ package me.imbanana.knockdown.mixin;
 import me.imbanana.knockdown.KnockdownMod;
 import me.imbanana.knockdown.data.ModDamageTypes;
 import me.imbanana.knockdown.data.ModDataAttachments;
+import me.imbanana.knockdown.network.ModNetwork;
+import me.imbanana.knockdown.network.s2c.KnockdownSyncPayloadS2C;
 import me.imbanana.knockdown.util.IKnockdownable;
 import me.imbanana.knockdown.util.KnockdownData;
 import net.minecraft.core.registries.Registries;
@@ -44,6 +46,9 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
     @Unique
     private int knockdownTicksLeft = 0;
 
+    @Unique
+    private boolean fastBleedOut = false;
+
     protected PlayerMixin(EntityType<? extends LivingEntity> type, Level level) {
         super(type, level);
     }
@@ -54,7 +59,8 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
     )
     private void injectTick(CallbackInfo ci) {
         if (knockdownTicksLeft > 0 && this.isKnockedDown()) {
-            knockdownTicksLeft -= 1;
+            KnockdownMod.LOGGER.info(String.valueOf(this.isUsingItem()));
+            knockdownTicksLeft -= this.getBleedOutSpeed();
         }
 
         if (!this.isLocalPlayer() && this.isKnockedDown() && knockdownTicksLeft <= 0 && this.isAlive()) {
@@ -142,11 +148,36 @@ public abstract class PlayerMixin extends Avatar implements ContainerUser, IKnoc
 
     @Override
     public int getMaxTicks() {
-        return 100;
+        return 20 * 40;
     }
 
     @Override
     public int getTicksLeft() {
         return this.knockdownTicksLeft;
+    }
+
+    @Override
+    public void setTicksLeft(int value) {
+        this.knockdownTicksLeft = value;
+    }
+
+    @Override
+    public int getBleedOutSpeed() {
+        return this.fastBleedOut ? 4 : 1;
+    }
+
+    @Override
+    public void setFastBleedOut(boolean value) {
+        this.fastBleedOut = value;
+    }
+
+    @Override
+    public boolean isBleedingOutFast() {
+        return this.fastBleedOut;
+    }
+
+    @Override
+    public void syncTicksLeft() {
+
     }
 }
